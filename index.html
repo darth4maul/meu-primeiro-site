@@ -1,19 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>meu primeiro site</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Martial Arts Quizizz</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>site</h1>
-        <h2>site</h2>
-        <header></header>
-        <main>
-            <p>Por:Rafael</p>
-            <p>brawl stars</p>
-            <main>
-    
+  <div class="quiz-container">
+    <!-- Tela Inicial -->
+    <div id="start-screen" class="screen active">
+      <h1>🥊 Quiz de Lutas & Artes Marciais</h1>
+      <p>Teste seus conhecimentos sobre Judô, Karatê, JIU-JITSU, MMA e muito mais!</p>
+      <button id="start-btn" class="btn">Iniciar Quiz</button>
+    </div>
+
+    <!-- Tela do Quiz -->
+    <div id="quiz-screen" class="screen">
+      <div class="quiz-header">
+        <span id="question-number">Pergunta 1/5</span>
+        <span id="score-display">Pontos: 0</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progress" class="progress-fill"></div>
+      </div>
+      <h2 id="question-text">Pergunta aqui...</h2>
+      <div id="options-container" class="options-grid"></div>
+    </div>
+
+    <!-- Tela do Resultado -->
+    <div id="result-screen" class="screen">
+      <h2>Fim do Game! 🏆</h2>
+      <p id="final-score">Sua pontuação: 0/5</p>
+      <p id="feedback-message"></p>
+      <button id="restart-btn" class="btn">Jogar Novamente</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
