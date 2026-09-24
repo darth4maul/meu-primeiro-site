@@ -1,44 +1,849 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Martial Arts Quizizz</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Martial Arts Quizizz | Quiz de Lutas</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons for SVG UI icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Inter & Roboto Condensed Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Teko', 'sans-serif'],
+          },
+          colors: {
+            dojo: {
+              900: '#0b0c10',
+              800: '#1f2833',
+              700: '#2c3531',
+              accent: '#ff2e63',
+              accentHover: '#e02855',
+              gold: '#f39c12',
+              cyan: '#08d9d6',
+            }
+          },
+          animation: {
+            'pulse-fast': 'pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'bounce-short': 'bounceShort 0.4s ease-in-out',
+            'shake': 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both',
+          },
+          keyframes: {
+            bounceShort: {
+              '0%, 100%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.08)' },
+            },
+            shake: {
+              '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+              '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+              '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+              '40%, 60%': { transform: 'translate3d(4px, 0, 0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0c10;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1f2833;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ff2e63;
+    }
+
+    .glass-card {
+      background: rgba(31, 40, 51, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glow-red {
+      box-shadow: 0 0 20px rgba(255, 46, 99, 0.35);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px rgba(8, 217, 214, 0.35);
+    }
+    .glow-gold {
+      box-shadow: 0 0 20px rgba(243, 156, 18, 0.35);
+    }
+  </style>
 </head>
-<body>
-  <div class="quiz-container">
-    <!-- Tela Inicial -->
-    <div id="start-screen" class="screen active">
-      <h1>🥊 Quiz de Lutas & Artes Marciais</h1>
-      <p>Teste seus conhecimentos sobre Judô, Karatê, JIU-JITSU, MMA e muito mais!</p>
-      <button id="start-btn" class="btn">Iniciar Quiz</button>
-    </div>
+<body class="bg-dojo-900 text-gray-100 min-h-screen font-sans flex flex-col justify-between selection:bg-dojo-accent selection:text-white">
 
-    <!-- Tela do Quiz -->
-    <div id="quiz-screen" class="screen">
-      <div class="quiz-header">
-        <span id="question-number">Pergunta 1/5</span>
-        <span id="score-display">Pontos: 0</span>
+  <!-- Top Navbar -->
+  <header class="w-full glass-card sticky top-0 z-40 border-b border-gray-800 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="app.showScreen('welcome-screen')">
+        <div class="w-10 h-10 rounded-xl bg-dojo-accent flex items-center justify-center shadow-lg shadow-dojo-accent/40">
+          <i class="ph-bold ph-hand-fist text-2xl text-white"></i>
+        </div>
+        <div>
+          <h1 class="font-display tracking-wide text-2xl leading-none uppercase font-bold text-white flex items-center gap-2">
+            QUIZIZZ <span class="text-dojo-accent">LUTAS</span>
+          </h1>
+          <p class="text-[10px] text-gray-400 tracking-wider font-semibold uppercase">Martial Arts Arena</p>
+        </div>
       </div>
-      <div class="progress-bar">
-        <div id="progress" class="progress-fill"></div>
-      </div>
-      <h2 id="question-text">Pergunta aqui...</h2>
-      <div id="options-container" class="options-grid"></div>
-    </div>
 
-    <!-- Tela do Resultado -->
-    <div id="result-screen" class="screen">
-      <h2>Fim do Game! 🏆</h2>
-      <p id="final-score">Sua pontuação: 0/5</p>
-      <p id="feedback-message"></p>
-      <button id="restart-btn" class="btn">Jogar Novamente</button>
+      <div class="flex items-center gap-2">
+        <button id="sound-toggle-btn" onclick="app.toggleSound()" class="p-2.5 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-300 hover:text-white transition" title="Alternar Som">
+          <i id="sound-icon" class="ph-bold ph-speaker-high text-xl"></i>
+        </button>
+        <button onclick="app.showGithubModal()" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-xs font-semibold text-gray-200 transition">
+          <i class="ph-bold ph-github-logo text-lg text-dojo-cyan"></i>
+          <span class="hidden sm:inline">Docs GitHub</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full max-w-4xl mx-auto p-4 my-auto">
+
+    <!-- SCREEN 1: WELCOME SCREEN -->
+    <section id="welcome-screen" class="glass-card rounded-2xl p-6 sm:p-10 text-center glow-red transition-all duration-300">
+      <div class="inline-flex p-3 bg-dojo-accent/10 border border-dojo-accent/30 rounded-2xl mb-4 text-dojo-accent animate-pulse-fast">
+        <i class="ph-bold ph-trophy text-4xl"></i>
+      </div>
+      <h2 class="font-display text-4xl sm:text-6xl font-bold uppercase tracking-wide text-white mb-2">
+        Mestre do <span class="text-dojo-accent">Combat</span>
+      </h2>
+      <p class="text-gray-300 max-w-xl mx-auto text-sm sm:text-base mb-8">
+        Teste seus conhecimentos em Judô, Jiu-Jitsu, Muay Thai, Karate, Boxe, Taekwondo e MMA em um desafio interativo no estilo Quizizz!
+      </p>
+
+      <!-- Player Name Input -->
+      <div class="max-w-md mx-auto mb-8 text-left">
+        <label for="player-name" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Seu Apelido de Lutador</label>
+        <div class="relative">
+          <i class="ph-bold ph-user text-xl absolute left-3.5 top-3.5 text-gray-500"></i>
+          <input type="text" id="player-name" placehol
+      <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
+        <button onclick="app.startQuiz()" class="w-full py-4 px-8 rounded-xl bg-dojo-accent hover:bg-dojo-accentHover text-white font-bold tracking-wider uppercase text-lg transition transform active:scale-95 shadow-lg shadow-dojo-accent/30 flex items-center justify-center gap-2">
+          <i class="ph-bold ph-play text-xl"></i> Iniciar Desafio
+        </button>
+        <button onclick="app.showLeaderboard()" class="w-full py-4 px-6 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold tracking-wider uppercase text-sm transition flex items-center justify-center gap-2 border border-gray-700">
+          <i class="ph-bold ph-ranking text-xl text-dojo-gold"></i> Placar de Líderes
+        </button>
+      </div>
+
+      <!-- Features Pill Highlights -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-10 border-t border-gray-800 pt-6 text-xs text-gray-400">
+        <div class="flex items-center justify-center gap-2 bg-gray-900/40 py-2 px-3 rounded-lg">
+          <i class="ph-bold ph-timer text-dojo-cyan text-base"></i> Tempo Limite
+        </div>
+        <div class="flex items-center justify-center gap-2 bg-gray-900/40 py-2 px-3 rounded-lg">
+          <i class="ph-bold ph-fire text-dojo-accent text-base"></i> Bônus de Streak
+        </div>
+        <div class="flex items-center justify-center gap-2 bg-gray-900/40 py-2 px-3 rounded-lg">
+          <i class="ph-bold ph-speaker-high text-dojo-gold text-base"></i> Áudio Sintetizado
+        </div>
+        <div class="flex items-center justify-center gap-2 bg-gray-900/40 py-2 px-3 rounded-lg">
+          <i class="ph-bold ph-hard-drives text-emerald-400 text-base"></i> LocalStorage
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: ACTIVE QUIZ GAME -->
+    <section id="quiz-screen" class="hidden glass-card rounded-2xl p-4 sm:p-8 relative overflow-hidden">
+      <!-- Top Hud bar -->
+      <div class="flex flex-wrap justify-between items-center gap-3 mb-6 bg-gray-900/60 p-3.5 rounded-xl border border-gray-800">
+        <!-- Progress badge -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-gray-400 uppercase">Questão</span>
+          <span id="question-counter" class="text-sm font-black text-white bg-gray-800 px-3 py-1 rounded-lg border border-gray-700">1/10</span>
+        </div>
+
+        <!-- Score Badge -->
+        <div class="flex items-center gap-2">
+          <i class="ph-fill ph-star text-dojo-gold text-lg"></i>
+          <span class="text-xs font-bold text-gray-400 uppercase">Pontos:</span>
+          <span id="score-display" class="text-lg font-black text-dojo-gold tracking-tight">0</span>
+        </div>
+
+        <!-- Streak Badge -->
+        <div id="streak-container" class="flex items-center gap-1.5 bg-dojo-accent/10 border border-dojo-accent/30 px-3 py-1 rounded-lg text-dojo-accent font-bold text-xs uppercase animate-pulse">
+          <i class="ph-fill ph-fire text-base"></i>
+          <span>Combo x<span id="streak-count">0</span></span>
+        </div>
+      </div>
+
+      <!-- Timer Progress Bar -->
+      <div class="w-full bg-gray-900 h-2.5 rounded-full overflow-hidden mb-6 border border-gray-800 relative">
+        <div id="timer-bar" class="bg-gradient-to-r from-dojo-cyan via-emerald-400 to-dojo-accent h-full w-full transition-all duration-100 ease-linear"></div>
+      </div>
+
+      <!-- Question Category & Card -->
+      <div class="mb-6">
+        <span id="question-category" class="inline-block bg-dojo-cyan/10 border border-dojo-cyan/30 text-dojo-cyan text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+          ARTES MARCIAIS
+        </span>
+        <h3 id="question-text" class="text-xl sm:text-2xl font-bold text-white leading-snug">
+          Carregando pergunta...
+        </h3>
+      </div>
+
+      <!-- Options Grid -->
+      <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+        <!-- Buttons injected dynamically -->
+      </div>
+
+      <!-- Feedback Banner (Hidden by default) -->
+      <div id="feedback-banner" class="hidden rounded-xl p-4 text-center font-bold text-base transition-all duration-200">
+        <span id="feedback-text"></span>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: RESULTS SCREEN -->
+    <section id="results-screen" class="hidden glass-card rounded-2xl p-6 sm:p-10 text-center">
+      <div class="inline-flex p-4 bg-dojo-gold/10 border border-dojo-gold/30 rounded-2xl mb-4 text-dojo-gold glow-gold">
+        <i class="ph-bold ph-medal text-5xl"></i>
+      </div>
+      <h2 class="font-display text-4xl sm:text-5xl font-bold uppercase text-white mb-1">
+        Fim de <span class="text-dojo-gold">Combate!</span>
+      </h2>
+      <p id="result-greeting" class="text-gray-400 text-sm mb-6">Excelente esforço no tatame!</p>
+
+      <!-- Results Stats Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto mb-8">
+        <div class="bg-gray-900/70 border border-gray-800 p-4 rounded-xl">
+          <span class="block text-[11px] font-bold text-gray-500 uppercase">Pontuação</span>
+          <span id="final-score" class="text-2xl sm:text-3xl font-black text-dojo-gold">0</span>
+        </div>
+        <div class="bg-gray-900/70 border border-gray-800 p-4 rounded-xl">
+          <span class="block text-[11px] font-bold text-gray-500 uppercase">Acertos</span>
+          <span id="final-accuracy" class="text-2xl sm:text-3xl font-black text-emerald-400">0/10</span>
+        </div>
+        <div class="bg-gray-900/70 border border-gray-800 p-4 rounded-xl">
+          <span class="block text-[11px] font-bold text-gray-500 uppercase">Maior Combo</span>
+          <span id="final-streak" class="text-2xl sm:text-3xl font-black text-dojo-accent">0x</span>
+        </div>
+        <div class="bg-gray-900/70 border border-gray-800 p-4 rounded-xl">
+          <span class="block text-[11px] font-bold text-gray-500 uppercase">Graduação</span>
+          <span id="final-rank" class="text-xs sm:text-sm font-black text-dojo-cyan uppercase mt-2 block">Branca</span>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
+        <button onclick="app.startQuiz()" class="w-full py-3.5 px-6 rounded-xl bg-dojo-accent hover:bg-dojo-accentHover text-white font-bold uppercase tracking-wider text-sm transition flex items-center justify-center gap-2">
+          <i class="ph-bold ph-arrow-counter-clockwise text-lg"></i> Tentar Novamente
+        </button>
+        <button onclick="app.showLeaderboard()" class="w-full py-3.5 px-6 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold uppercase tracking-wider text-sm transition flex items-center justify-center gap-2 border border-gray-700">
+          <i class="ph-bold ph-trophy text-lg text-dojo-gold"></i> Ver Ranking
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: LEADERBOARD SCREEN -->
+    <section id="leaderboard-screen" class="hidden glass-card rounded-2xl p-6 sm:p-8">
+      <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+        <div class="flex items-center gap-3">
+          <i class="ph-bold ph-trophy text-3xl text-dojo-gold"></i>
+          <h2 class="font-display text-3xl font-bold uppercase text-white">Placar dos Mestres</h2>
+        </div>
+        <button onclick="app.showScreen('welcome-screen')" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Leaderboard Table -->
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="text-xs text-gray-400 uppercase border-b border-gray-800 bg-gray-900/40">
+              <th class="p-3">#</th>
+              <th class="p-3">Lutador</th>
+              <th class="p-3">Pontos</th>
+              <th class="p-3">Acertos</th>
+              <th class="p-3">Data</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body" class="divide-y divide-gray-800/50">
+            <!-- Rows injected dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <button onclick="app.clearLeaderboard()" class="text-xs text-gray-500 hover:text-red-400 transition flex items-center gap-1">
+          <i class="ph-bold ph-trash"></i> Limpar Histórico
+        </button>
+        <button onclick="app.showScreen('welcome-screen')" class="px-5 py-2.5 rounded-xl bg-dojo-accent hover:bg-dojo-accentHover text-white font-bold text-xs uppercase tracking-wider">
+          Voltar ao Início
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: GITHUB DOCUMENTATION & README -->
+  <div id="github-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card max-w-2xl w-full max-h-[85vh] rounded-2xl flex flex-col overflow-hidden border border-gray-700">
+      <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900/80">
+        <div class="flex items-center gap-2">
+          <i class="ph-bold ph-github-logo text-2xl text-dojo-cyan"></i>
+          <h3 class="font-bold text-white text-base">Instruções para o GitHub (README.md)</h3>
+        </div>
+        <button onclick="app.hideGithubModal()" class="text-gray-400 hover:text-white p-1">
+          <i class="ph-bold ph-x text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto font-mono text-xs text-gray-300 space-y-4 bg-gray-950/60 leading-relaxed">
+        <div>
+          <p class="text-dojo-cyan font-bold mb-1"># Como subir este projeto para o GitHub:</p>
+          <ol class="list-decimal pl-5 space-y-1 text-gray-400">
+            <li>Crie uma nova pasta no seu computador para o projeto.</li>
+            <li>Salve este arquivo como <code class="text-dojo-gold bg-gray-900 px-1 py-0.5 rounded">index.html</code>.</li>
+            <li>Crie o arquivo <code class="text-dojo-gold bg-gray-900 px-1 py-0.5 rounded">README.md</code> copiado da caixa abaixo.</li>
+            <li>Inicialize o git e envie para o GitHub usando o terminal:</li>
+          </ol>
+        </div>
+
+        <!-- Pre-formatted markdown content block -->
+        <div class="relative group">
+          <button onclick="app.copyReadmeText()" class="absolute top-2 right-2 px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-white rounded text-[10px] font-sans border border-gray-700">
+            Copiar README
+          </button>
+          <pre id="readme-code" class="bg-gray-900 p-4 rounded-xl border border-gray-800 text-[11px] overflow-x-auto text-emerald-400 whitespace-pre-wrap">
+# 🥋 Quizizz de Lutas - Martial Arts Quiz Game
+
+Um aplicativo web interativo estilo Quizizz com tema de Artes Marciais e Lutas, desenvolvido com HTML5, Tailwind CSS e JavaScript Puro.
+
+## 🚀 Funcionalidades
+
+- 🥊 **Perguntas Variadas**: Judô, Jiu-Jitsu Brasileiro (BJJ), Muay Thai, Karate, Boxe, Taekwondo, Capoeira e MMA.
+- ⏱️ **Timer Dinâmico**: Tempo regressivo para cada pergunta com bônus por velocidade.
+- 🔥 **Sistema de Combo/Streak**: Bônus de pontuação ao acertar respostas em sequência.
+- 🔊 **Efeitos Sonoros**: Audio sintetizado direto via Web Audio API (sem dependência de arquivos externos).
+- 🏆 **Ranking com LocalStorage**: Salvamento local do placar e historico dos melhores lutadores.
+- 📱 **100% Responsivo**: Layout otimizado para celulares, tablets e computadores.
+
+## 📁 Estrutura do Repositório
+
+```text
+quizizz-lutas/
+├── index.html       # Aplicação completa (UI, Estilos e Lógica)
+└── README.md        # Documentação do Projeto
+```
+
+## 💻 Como Executar
+
+1. Baixe ou clone este repositório:
+   ```bash
+   git clone https://github.com/SEU-USUARIO/quizizz-lutas.git
+   ```
+2. Abra o arquivo `index.html` em qualquer navegador moderno.
+
+## 📄 Licença
+Este projeto está sob a licença MIT. Sinta-se livre para modificar e compartilhar!
+          </pre>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-gray-800 bg-gray-900/80 flex justify-end">
+        <button onclick="app.hideGithubModal()" class="px-4 py-2 rounded-xl bg-dojo-accent text-white font-bold text-xs uppercase">
+          Fechar
+        </button>
+      </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Footer -->
+  <footer class="w-full text-center py-4 text-xs text-gray-500 border-t border-gray-800/50 mt-auto">
+    Quizizz Lutas &copy; 2026 • Desenvolvido para Fãs de Artes Marciais
+  </footer>
+
+  <script>
+    /* Quizizz Lutas Application Engine */
+    const QUESTIONS = [
+      {
+        id: 1,
+        category: "Jiu-Jitsu (BJJ)",
+        question: "No Jiu-Jitsu Brasileiro, qual é a graduação de faixa que vem imediatamente após a faixa azul em adultos?",
+        options: ["Faixa Roxa", "Faixa Marrom", "Faixa Preta", "Faixa Verde"],
+        answer: 0,
+        explanation: "A sequência oficial de faixas adultas da IBJJF é: Branca, Azul, Roxa, Marrom e Preta."
+      },
+      {
+        id: 2,
+        category: "Judô",
+        question: "O que significa literalmente a palavra 'Judo' traduzida do japonês?",
+        options: ["Caminho das Mãos Vazias", "Caminho Suave", "Arte do Combate", "Força da Natureza"],
+        answer: 1,
+        explanation: "'Ju' significa suave/flexível e 'Do' significa caminho. Portanto, Judô é o 'Caminho Suave'."
+      },
+      {
+        id: 3,
+        category: "Muay Thai",
+        question: "O Muay Thai é popularmente conhecido por qual título referente às suas superfícies de contato?",
+        options: ["A Arte dos 4 Puños", "A Arte das 8 Armas", "O Combate do Dragão", "Estilo das 6 Lâminas"],
+        answer: 1,
+        explanation: "É chamado de 'Arte das 8 Armas' pois utiliza dois punhos, dois cotovelos, dois joelhos e duas canelas."
+      },
+      {
+        id: 4,
+        category: "MMA & UFC",
+        question: "Qual lutador brasileiro ficou famoso por manter o cinturão dos médios do UFC por quase 7 anos e 16 vitórias seguidas?",
+        options: ["José Aldo", "Anderson Silva", "Vitor Belfort", "Alex Poatan"],
+        answer: 1,
+        explanation: "Anderson 'Spider' Silva manteve uma das sequências de vitórias mais dominantes da história do UFC."
+      },
+      {
+        id: 5,
+        category: "Karate",
+        question: "Qual o termo em japonês utilizado para designar o local oficial de treino nas artes marciais orientais?",
+        options: ["Tatame", "Dojo", "Sensei", "Kumite"],
+        answer: 1,
+        explanation: "'Dojo' (lugar do caminho) é o local onde se praticam as artes marciais japonesas."
+      },
+      {
+        id: 6,
+        category: "Boxe",
+        question: "No Boxe tradicional, qual é o nome do golpe direto desferido com a mão da frente da guarda?",
+        options: ["Cross (Direto)", "Uppercut", "Jab", "Hook (Cruzado)"],
+        answer: 2,
+        explanation: "O 'Jab' é o golpe rápido de preparação desferido com a mão dianteira."
+      },
+      {
+        id: 7,
+        category: "Taekwondo",
+        question: "Qual é o país de origem do Taekwondo?",
+        options: ["Japão", "China", "Coreia do Sul", "Tailândia"],
+        answer: 2,
+        explanation: "O Taekwondo foi desenvolvido na Coreia do Sul e é famoso pelos seus chutes rápidos e altos."
+      },
+      {
+        id: 8,
+        category: "Capoeira",
+        question: "Na Capoeira, qual instrumento musical de corda única é considerado o principal condutor da roda?",
+        options: ["Atabaque", "Pandeiro", "Berimbau", "Agogô"],
+        answer: 2,
+        explanation: "O Berimbau dita o ritmo e o estilo do jogo na roda de Capoeira."
+      },
+      {
+        id: 9,
+        category: "Jiu-Jitsu (BJJ)",
+        question: "Qual das seguintes pontuações NÃO existe nas regras oficiais da IBJJF para pontuação de posições?",
+        options: ["2 Pontos (Queda / Raspagem)", "3 Pontos (Passagem de Guarda)", "4 Pontos (Montada / Pegada de Costas)", "5 Pontos (Nocaute Técnico)"],
+        answer: 3,
+        explanation: "As pontuações no Jiu-Jitsu são de 2, 3 e 4 pontos. Não existe pontuação de 5 pontos."
+      },
+      {
+        id: 10,
+        category: "MMA",
+        question: "O que significa a sigla MMA?",
+        options: ["Mixed Martial Arts", "Modern Martial Association", "Maximum Muscle Action", "Master Martial Athletics"],
+        answer: 0,
+        explanation: "MMA significa 'Mixed Martial Arts' (Artes Marciais Mistas)."
+      }
+    ];
+
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+
+      playCorrect() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.25);
+      }
+
+      playWrong() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now); // A3
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.2); // A2
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.25);
+      }
+
+      playClick() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, now);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.05);
+      }
+    }
+
+    class QuizApp {
+      constructor() {
+        this.sound = new SoundEngine();
+        this.playerName = "Lutador";
+        this.currentQuestionIdx = 0;
+        this.score = 0;
+        this.streak = 0;
+        this.maxStreak = 0;
+        this.correctCount = 0;
+        this.timer = null;
+        this.timeLeft = 15;
+        this.maxTime = 15;
+        this.shuffledQuestions = [];
+        this.canAnswer = false;
+      }
+
+      init() {
+        // Load saved player name if available
+        const savedName = localStorage.getItem("quiz_player_name");
+        if (savedName) {
+          document.getElementById("player-name").value = savedName;
+        }
+      }
+
+      toggleSound() {
+        this.sound.enabled = !this.sound.enabled;
+        const icon = document.getElementById("sound-icon");
+        if (this.sound.enabled) {
+          icon.className = "ph-bold ph-speaker-high text-xl";
+        } else {
+          icon.className = "ph-bold ph-speaker-slash text-xl text-red-400";
+        }
+      }
+
+      showScreen(screenId) {
+        ["welcome-screen", "quiz-screen", "results-screen", "leaderboard-screen"].forEach(id => {
+          document.getElementById(id).classList.add("hidden");
+        });
+        document.getElementById(screenId).classList.remove("hidden");
+      }
+
+      startQuiz() {
+        const inputName = document.getElementById("player-name").value.trim();
+        this.playerName = inputName || "Lutador Anônimo";
+        localStorage.setItem("quiz_player_name", this.playerName);
+
+        this.sound.playClick();
+        this.shuffledQuestions = [...QUESTIONS].sort(() => Math.random() - 0.5);
+        this.currentQuestionIdx = 0;
+        this.score = 0;
+        this.streak = 0;
+        this.maxStreak = 0;
+        this.correctCount = 0;
+
+        this.showScreen("quiz-screen");
+        this.loadQuestion();
+      }
+
+      loadQuestion() {
+        clearInterval(this.timer);
+        this.canAnswer = true;
+        const q = this.shuffledQuestions[this.currentQuestionIdx];
+
+        // Update HUD
+        document.getElementById("question-counter").innerText = `${this.currentQuestionIdx + 1}/${this.shuffledQuestions.length}`;
+        document.getElementById("score-display").innerText = this.score;
+        document.getElementById("streak-count").innerText = this.streak;
+        document.getElementById("question-category").innerText = q.category;
+        document.getElementById("question-text").innerText = q.question;
+
+        const feedbackBanner = document.getElementById("feedback-banner");
+        feedbackBanner.className = "hidden";
+
+        // Render Options Grid
+        const grid = document.getElementById("options-grid");
+        grid.innerHTML = "";
+
+        const colors = [
+          "from-blue-600/20 to-blue-900/40 border-blue-500/40 hover:border-blue-400",
+          "from-purple-600/20 to-purple-900/40 border-purple-500/40 hover:border-purple-400",
+          "from-amber-600/20 to-amber-900/40 border-amber-500/40 hover:border-amber-400",
+          "from-emerald-600/20 to-emerald-900/40 border-emerald-500/40 hover:border-emerald-400"
+        ];
+
+        q.options.forEach((opt, idx) => {
+          const btn = document.createElement("button");
+          btn.className = `option-btn text-left p-4 rounded-xl border bg-gradient-to-r ${colors[idx % 4]} text-white font-medium text-sm sm:text-base transition-all duration-150 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-3`;
+          btn.onclick = () => this.handleAnswer(idx, btn);
+          
+          btn.innerHTML = `
+            <span class="w-7 h-7 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center font-bold text-xs shrink-0">${String.fromCharCode(65 + idx)}</span>
+            <span>${opt}</span>
+          `;
+          grid.appendChild(btn);
+        });
+
+        // Start Countdown Timer
+        this.timeLeft = this.maxTime;
+        this.updateTimerBar();
+        this.timer = setInterval(() => {
+          this.timeLeft -= 0.1;
+          if (this.timeLeft <= 0) {
+            this.timeLeft = 0;
+            clearInterval(this.timer);
+            this.handleTimeout();
+          }
+          this.updateTimerBar();
+        }, 100);
+      }
+
+      updateTimerBar() {
+        const bar = document.getElementById("timer-bar");
+        const percentage = (this.timeLeft / this.maxTime) * 100;
+        bar.style.width = `${Math.max(0, percentage)}%`;
+
+        if (percentage < 30) {
+          bar.className = "bg-gradient-to-r from-red-600 to-dojo-accent h-full w-full transition-all duration-100 ease-linear";
+        } else {
+          bar.className = "bg-gradient-to-r from-dojo-cyan via-emerald-400 to-dojo-accent h-full w-full transition-all duration-100 ease-linear";
+        }
+      }
+
+      handleAnswer(selectedIdx, btnElement) {
+        if (!this.canAnswer) return;
+        this.canAnswer = false;
+        clearInterval(this.timer);
+
+        const q = this.shuffledQuestions[this.currentQuestionIdx];
+        const allBtns = document.querySelectorAll(".option-btn");
+        const feedbackBanner = document.getElementById("feedback-banner");
+        const feedbackText = document.getElementById("feedback-text");
+
+        if (selectedIdx === q.answer) {
+          // Correct Answer
+          this.sound.playCorrect();
+          btnElement.classList.add("bg-emerald-600/80", "border-emerald-400", "glow-cyan");
+          
+          this.streak++;
+          if (this.streak > this.maxStreak) this.maxStreak = this.streak;
+          this.correctCount++;
+
+          // Calculate Score with Speed Bonus & Streak Multiplier
+          const timeBonus = Math.round(this.timeLeft * 20);
+          const streakMultiplier = 1 + (this.streak * 0.2);
+          const pointsEarned = Math.round((100 + timeBonus) * streakMultiplier);
+          this.score += pointsEarned;
+
+          feedbackBanner.className = "block rounded-xl p-3 text-center font-bold text-sm bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 animate-bounce-short";
+          feedbackText.innerText = `🥊 Golpe Perfeito! +${pointsEarned} pts (${q.explanation})`;
+
+        } else {
+          // Wrong Answer
+          this.sound.playWrong();
+          btnElement.classList.add("bg-red-600/80", "border-red-400", "animate-shake");
+          
+          // Highlight correct answer
+          allBtns[q.answer].classList.add("bg-emerald-600/60", "border-emerald-400");
+
+          this.streak = 0;
+          feedbackBanner.className = "block rounded-xl p-3 text-center font-bold text-sm bg-red-950/80 border border-red-500/50 text-red-300";
+          feedbackText.innerText = `❌ Bloqueado! Resposta correta: ${q.options[q.answer]}`;
+        }
+
+        document.getElementById("score-display").innerText = this.score;
+        document.getElementById("streak-count").innerText = this.streak;
+
+        setTimeout(() => {
+          this.currentQuestionIdx++;
+          if (this.currentQuestionIdx < this.shuffledQuestions.length) {
+            this.loadQuestion();
+          } else {
+            this.finishQuiz();
+          }
+        }, 2200);
+      }
+
+      handleTimeout() {
+        if (!this.canAnswer) return;
+        this.canAnswer = false;
+        this.sound.playWrong();
+
+        const q = this.shuffledQuestions[this.currentQuestionIdx];
+        const allBtns = document.querySelectorAll(".option-btn");
+        allBtns[q.answer].classList.add("bg-emerald-600/60", "border-emerald-400");
+
+        this.streak = 0;
+        document.getElementById("streak-count").innerText = "0";
+
+        const feedbackBanner = document.getElementById("feedback-banner");
+        feedbackBanner.className = "block rounded-xl p-3 text-center font-bold text-sm bg-amber-950/80 border border-amber-500/50 text-amber-300";
+        document.getElementById("feedback-text").innerText = `⏱️ Tempo Esgotado! Resposta correta: ${q.options[q.answer]}`;
+
+        setTimeout(() => {
+          this.currentQuestionIdx++;
+          if (this.currentQuestionIdx < this.shuffledQuestions.length) {
+            this.loadQuestion();
+          } else {
+            this.finishQuiz();
+          }
+        }, 2200);
+      }
+
+      finishQuiz() {
+        this.saveResult();
+        this.showScreen("results-screen");
+
+        document.getElementById("result-greeting").innerText = `Bom combate, ${this.playerName}! Aqui está o seu desempenho:`;
+        document.getElementById("final-score").innerText = this.score;
+        document.getElementById("final-accuracy").innerText = `${this.correctCount}/${this.shuffledQuestions.length}`;
+        document.getElementById("final-streak").innerText = `${this.maxStreak}x`;
+
+        // Calculate Belt Rank based on accuracy %
+        const percentage = (this.correctCount / this.shuffledQuestions.length) * 100;
+        let rank = "Faixa Branca 🥋";
+        let colorClass = "text-gray-300";
+
+        if (percentage === 100) {
+          rank = "Faixa Preta (Grão-Mestre) 🥋🔥";
+          colorClass = "text-dojo-accent";
+        } else if (percentage >= 80) {
+          rank = "Faixa Marrom 🥋";
+          colorClass = "text-amber-600";
+        } else if (percentage >= 60) {
+          rank = "Faixa Roxa 🥋";
+          colorClass = "text-purple-400";
+        } else if (percentage >= 40) {
+          rank = "Faixa Azul 🥋";
+          colorClass = "text-blue-400";
+        }
+
+        const rankEl = document.getElementById("final-rank");
+        rankEl.innerText = rank;
+        rankEl.className = `text-xs sm:text-sm font-black uppercase mt-1 block ${colorClass}`;
+      }
+
+      saveResult() {
+        const history = JSON.parse(localStorage.getItem("quiz_leaderboard") || "[]");
+        const newEntry = {
+          name: this.playerName,
+          score: this.score,
+          accuracy: `${this.correctCount}/${this.shuffledQuestions.length}`,
+          date: new Date().toLocaleDateString("pt-BR")
+        };
+
+        history.push(newEntry);
+        // Sort descending by score and keep top 10
+        history.sort((a, b) => b.score - a.score);
+        localStorage.setItem("quiz_leaderboard", JSON.stringify(history.slice(0, 10)));
+      }
+
+      showLeaderboard() {
+        this.sound.playClick();
+        this.showScreen("leaderboard-screen");
+        const tbody = document.getElementById("leaderboard-body");
+        tbody.innerHTML = "";
+
+        const history = JSON.parse(localStorage.getItem("quiz_leaderboard") || "[]");
+
+        if (history.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Nenhuma partida registrada ainda.</td></tr>`;
+          return;
+        }
+
+        history.forEach((item, index) => {
+          const row = document.createElement("tr");
+          row.className = "hover:bg-gray-800/40 transition";
+          
+          let medal = `#${index + 1}`;
+          if (index === 0) medal = "🥇";
+          if (index === 1) medal = "🥈";
+          if (index === 2) medal = "🥉";
+
+          row.innerHTML = `
+            <td class="p-3 font-bold">${medal}</td>
+            <td class="p-3 font-semibold text-white">${this.escapeHtml(item.name)}</td>
+            <td class="p-3 font-black text-dojo-gold">${item.score}</td>
+            <td class="p-3 text-gray-300">${item.accuracy}</td>
+            <td class="p-3 text-xs text-gray-500">${item.date}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      clearLeaderboard() {
+        if (confirm("Deseja realmente apagar o histórico do placar?")) {
+          localStorage.removeItem("quiz_leaderboard");
+          this.showLeaderboard();
+        }
+      }
+
+      showGithubModal() {
+        document.getElementById("github-modal").classList.remove("hidden");
+      }
+
+      hideGithubModal() {
+        document.getElementById("github-modal").classList.add("hidden");
+      }
+
+      copyReadmeText() {
+        const text = document.getElementById("readme-code").innerText;
+        document.execCommand('copy');
+        alert("Conteúdo do README.md copiado com sucesso!");
+      }
+
+      escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+    }
+
+    // Initialize global app instance
+    const app = new QuizApp();
+    window.onload = () => app.init();
+  </script>
 </body>
-</html>* 
-{}
- 
+</html>
